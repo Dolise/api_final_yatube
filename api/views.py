@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters, mixins, serializers
+from rest_framework import viewsets, filters, mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters import rest_framework
 
@@ -35,9 +35,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, post_id=post_id)
 
 
-class FollowViewSet(mixins.ListModelMixin,
+class ListCreateSet(mixins.ListModelMixin,
                     mixins.CreateModelMixin,
                     viewsets.GenericViewSet):
+    pass
+
+
+class FollowViewSet(ListCreateSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     filter_backends = [filters.SearchFilter]
@@ -48,14 +52,10 @@ class FollowViewSet(mixins.ListModelMixin,
         return queryset
 
     def perform_create(self, serializer):
-        if self.request.user.username == self.request.POST.get('following'):
-            raise serializers.ValidationError
         serializer.save(user=self.request.user)
 
 
-class GroupViewSet(mixins.ListModelMixin,
-                   mixins.CreateModelMixin,
-                   viewsets.GenericViewSet):
+class GroupViewSet(ListCreateSet):
     permission_classes = [IsAuthenticatedOrReadOnly, ]
     queryset = Group.objects.all()
     serializer_class = GroupSerializer

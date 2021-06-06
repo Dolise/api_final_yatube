@@ -12,7 +12,6 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Post
-        read_only_fields = ('author', )
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -38,6 +37,11 @@ class FollowSerializer(serializers.ModelSerializer):
         slug_field='username'
     )
 
+    def validate(self, data):
+        if data['user'] == data['following']:
+            raise validators.ValidationError
+        return data
+
     class Meta:
         fields = '__all__'
         model = Follow
@@ -46,7 +50,7 @@ class FollowSerializer(serializers.ModelSerializer):
             validators.UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
                 fields=['user', 'following']
-            )
+            ),
         ]
 
 
